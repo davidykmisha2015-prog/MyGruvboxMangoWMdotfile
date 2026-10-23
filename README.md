@@ -74,20 +74,36 @@ The default modifier key is `SUPER` (`Win` key):
 
 ## 🚀 Installation
 
-### 1. Clone the repository
+## 🚀 Quick Installation
+
+### Method 1: The One-Liner (Fastest) ⚡
+Run this single command in your terminal to download and install the rice interactively:
+
 ```bash
-git clone https://github.com/davidykmisha2015-prog/mangowm-dotfiles.git ~/mangowm-dotfiles
-cd ~/mangowm-dotfiles
+bash <(curl -sSL https://raw.githubusercontent.com/davidykmisha2015-prog/mangowm-dotfiles/main/install.sh)
 ```
 
-### 2. Run the installer
-The script safely copies configuration folders into `~/.config/`:
+The script automatically:
+1. Asks for your confirmation.
+2. Creates an automatic timestamped backup of any existing configs in `~/.config/mangowm_backup_<timestamp>/`.
+3. Installs all configurations (`mango`, `waybar`, `swaync`, `rofi`, `kitty`).
+4. Checks which dependencies are present on your system.
+
+---
+
+### Method 2: Manual Git Clone
+If you prefer inspecting the code first:
+
 ```bash
-chmod +x install.sh
+# 1. Clone this repository
+git clone https://github.com/davidykmisha2015-prog/mangowm-dotfiles.git ~/mangowm-dotfiles
+cd ~/mangowm-dotfiles
+
+# 2. Run the interactive installer
 ./install.sh
 ```
 
-*(Optional)* Or link them manually using GNU Stow:
+*(Optional)* Or link files using GNU Stow:
 ```bash
 stow .
 ```
