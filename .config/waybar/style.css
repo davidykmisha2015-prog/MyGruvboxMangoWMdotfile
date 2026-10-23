@@ -1,0 +1,149 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    font-weight: bold;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: #1d2021;
+    color: #ebdbb2;
+    border-bottom: 2px solid #504945;
+}
+
+#workspaces button,
+#tags button {
+    padding: 0 8px;
+    color: #a89984;
+    background-color: transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+#workspaces button.occupied,
+#tags button.occupied {
+    color: #ebdbb2;
+    background-color: #3c3836;
+}
+
+#workspaces button.active,
+#tags button.focused {
+    color: #1d2021;
+    background-color: #83a598;
+}
+
+#workspaces button.urgent,
+#tags button.urgent {
+    color: #1d2021;
+    background-color: #fb4934;
+}
+
+#workspaces button:hover,
+#tags button:hover {
+    background-color: #504945;
+    color: #ebdbb2;
+}
+
+#taskbar button {
+    padding: 0 8px;
+    margin: 3px 2px;
+    border-radius: 4px;
+    background-color: #282828;
+    color: #a89984;
+}
+
+#taskbar button.active {
+    background-color: #3c3836;
+    color: #ebdbb2;
+}
+
+#layout,
+#window,
+#clock,
+#cpu,
+#memory,
+#network,
+#pulseaudio,
+#tray,
+#custom-notification,
+#custom-power {
+    padding: 0 10px;
+    margin: 3px 2px;
+    border-radius: 4px;
+    background-color: #282828;
+    color: #ebdbb2;
+}
+
+#layout {
+    color: #fabd2f;
+}
+
+#window {
+    background-color: transparent;
+    color: #d5c4a1;
+    font-weight: normal;
+}
+
+#clock {
+    color: #83a598;
+}
+
+#pulseaudio {
+    color: #b8bb26;
+}
+
+#pulseaudio.muted {
+    color: #928374;
+}
+
+#network {
+    color: #8ec07c;
+}
+
+#cpu {
+    color: #fe8019;
+}
+
+#memory {
+    color: #d3869b;
+}
+
+#custom-notification {
+    color: #fabd2f;
+    font-size: 14px;
+}
+
+#custom-power {
+    color: #fb4934;
+    font-size: 14px;
+    padding: 0 12px;
+    transition: all 0.2s ease-in-out;
+}
+
+#custom-power:hover {
+    background-color: #fb4934;
+    color: #1d2021;
+}
+
+/* GTK Menu для кнопки вимкнення */
+menu {
+    background-color: #282828;
+    border: 2px solid #504945;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+menu menuitem {
+    background-color: transparent;
+    color: #ebdbb2;
+    padding: 6px 14px;
+    margin: 2px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+menu menuitem:hover {
+    background-color: #3c3836;
+    color: #83a598;
+}

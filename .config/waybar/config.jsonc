@@ -1,0 +1,105 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 32,
+    "spacing": 8,
+    "modules-left": [
+        "ext/workspaces",
+        "wlr/taskbar"
+    ],
+    "modules-center": [
+        "clock"
+    ],
+    "modules-right": [
+        "pulseaudio",
+        "network",
+        "cpu",
+        "memory",
+        "tray",
+        "custom/notification",
+        "custom/power"
+    ],
+    "ext/workspaces": {
+        "format": "{name}",
+        "ignore-hidden": false,
+        "on-click": "activate",
+        "sort-by-id": true
+    },
+    "wlr/taskbar": {
+        "format": "{icon} {title:.30}",
+        "icon-size": 16,
+        "on-click": "activate",
+        "on-click-middle": "close"
+    },
+    "clock": {
+        "format": "󰥔  {:%H:%M   󰃭  %d.%m.%Y}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "cpu": {
+        "format": "  {usage}%",
+        "tooltip": false
+    },
+    "memory": {
+        "format": "  {}%"
+    },
+    "network": {
+        "format-wifi": "󰖩  {essid}",
+        "format-ethernet": "󰈀  Мережа",
+        "format-disconnected": "󰖪  Немає мережі",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}"
+    },
+    "pulseaudio": {
+        "scroll-step": 5,
+        "format": "{icon}  {volume}%",
+        "format-bluetooth": "󰂯 {icon}  {volume}%",
+        "format-bluetooth-muted": "󰂯 󰝟  Mute",
+        "format-muted": "󰝟  Mute",
+        "format-icons": {
+            "headphone": "󰋋",
+            "hands-free": "󰋎",
+            "headset": "󰋎",
+            "phone": "󰏲",
+            "portable": "󰏲",
+            "car": "󰄋",
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "tooltip-format": "{desc} | Гучність: {volume}%"
+    },
+    "tray": {
+        "icon-size": 16,
+        "spacing": 8
+    },
+    "custom/notification": {
+        "tooltip": false,
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "󰂚<span foreground='#fb4934'><sup></sup></span>",
+            "none": "󰂚",
+            "dnd-notification": "󰂛<span foreground='#fb4934'><sup></sup></span>",
+            "dnd-none": "󰂛",
+            "inhibited-notification": "󰂚<span foreground='#fb4934'><sup></sup></span>",
+            "inhibited-none": "󰂚",
+            "dnd-inhibited-notification": "󰂛<span foreground='#fb4934'><sup></sup></span>",
+            "dnd-inhibited-none": "󰂛"
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
+    },
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "menu": "on-click",
+        "menu-file": "/home/justadux/.config/waybar/power_menu.xml",
+        "menu-actions": {
+            "lock": "hyprlock",
+            "suspend": "systemctl suspend",
+            "reboot": "systemctl reboot",
+            "shutdown": "systemctl poweroff"
+        }
+    }
+}

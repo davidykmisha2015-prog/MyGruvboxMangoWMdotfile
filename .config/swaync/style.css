@@ -1,0 +1,109 @@
+@define-color cc-bg #1d2021;
+@define-color noti-border-color #504945;
+@define-color noti-bg #282828;
+@define-color noti-bg-darker #1d2021;
+@define-color noti-bg-hover #3c3836;
+@define-color noti-bg-focus #504945;
+@define-color noti-close-bg rgba(251, 73, 52, 0.1);
+@define-color noti-close-bg-hover rgba(251, 73, 52, 0.3);
+@define-color text-color #ebdbb2;
+@define-color text-color-disabled #a89984;
+@define-color bg-selected #83a598;
+
+* {
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-weight: bold;
+}
+
+.control-center {
+  background: @cc-bg;
+  border: 2px solid @noti-border-color;
+  border-radius: 8px;
+  color: @text-color;
+  padding: 12px;
+}
+
+.notification-row {
+  outline: none;
+  margin: 4px;
+  padding: 0;
+}
+
+.notification {
+  background: @noti-bg;
+  border: 1px solid @noti-border-color;
+  border-radius: 6px;
+  padding: 10px;
+  color: @text-color;
+}
+
+.notification-content {
+  background: transparent;
+  padding: 4px;
+}
+
+.close-button {
+  background: @noti-close-bg;
+  color: #fb4934;
+  text-shadow: none;
+  padding: 0;
+  border-radius: 4px;
+  margin-top: 4px;
+  margin-right: 4px;
+}
+
+.close-button:hover {
+  background: @noti-close-bg-hover;
+}
+
+.notification-default-action:hover,
+.notification-action:hover {
+  color: @bg-selected;
+  background: @noti-bg-hover;
+}
+
+.notification-default-action {
+  border-radius: 6px;
+}
+
+/* Widgets */
+.widget-title {
+  color: @text-color;
+  margin: 6px;
+  font-size: 1.2rem;
+}
+
+.widget-title > button {
+  font-size: 0.9rem;
+  color: @text-color;
+  background: @noti-bg;
+  border: 1px solid @noti-border-color;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.widget-title > button:hover {
+  background: @noti-bg-hover;
+  color: #fb4934;
+}
+
+.widget-dnd {
+  background: @noti-bg;
+  padding: 6px 12px;
+  margin: 6px;
+  border-radius: 6px;
+  border: 1px solid @noti-border-color;
+  font-size: 1rem;
+  color: @text-color;
+}
+
+.widget-dnd > switch {
+  border-radius: 6px;
+  border: 1px solid @noti-border-color;
+  background: @noti-bg-darker;
+}
+
+.widget-dnd > switch:checked {
+  background: #fabd2f;
+  border: 1px solid #fabd2f;
+}

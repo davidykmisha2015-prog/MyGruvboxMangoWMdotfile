@@ -1,0 +1,89 @@
+configuration {
+    modi: "drun,run";
+    show-icons: true;
+    display-drun: " ";
+    display-run: " ";
+    drun-display-format: "{name}";
+    font: "JetBrainsMono Nerd Font 12";
+}
+
+@theme "/dev/null"
+
+* {
+    bg: #282828;
+    bg-alt: #3c3836;
+    fg: #ebdbb2;
+    accent: #83a598;
+    border-col: #504945;
+
+    background-color: @bg;
+    text-color: @fg;
+    margin: 0;
+    padding: 0;
+}
+
+window {
+    width: 550px;
+    border: 2px;
+    border-color: @accent;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+mainbox {
+    spacing: 10px;
+}
+
+inputbar {
+    children: [prompt, entry];
+    background-color: @bg-alt;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+prompt {
+    background-color: inherit;
+    text-color: @accent;
+    margin: 0 8px 0 0;
+}
+
+entry {
+    background-color: inherit;
+    placeholder: "Пошук програм...";
+    placeholder-color: #928374;
+}
+
+listview {
+    lines: 8;
+    columns: 1;
+    fixed-height: false;
+    spacing: 4px;
+}
+
+element {
+    padding: 8px 10px;
+    spacing: 10px;
+    border-radius: 4px;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: @bg;
+    text-color: @fg;
+}
+
+element selected.normal {
+    background-color: @accent;
+    text-color: #1d2021;
+}
+
+element-icon {
+    size: 24px;
+    background-color: inherit;
+}
+
+element-text {
+    background-color: inherit;
+    text-color: inherit;
+    vertical-align: 0.5;
+}
