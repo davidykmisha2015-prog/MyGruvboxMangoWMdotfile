@@ -107,6 +107,18 @@ window#waybar {
 
 #memory {
     color: #d3869b;
+    transition: all 0.3s ease;
+}
+
+#memory.warning {
+    color: #fabd2f;
+    background-color: #3c3836;
+}
+
+#memory.critical {
+    color: #fb4934;
+    background-color: #501d1d;
+    font-weight: bold;
 }
 
 #custom-notification {

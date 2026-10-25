@@ -24,19 +24,25 @@ echo "    ██╔████╔██║███████║██╔█�
 echo "    ██║╚██╔╝██║██╔══██║██║╚██╗██║██║   ██║██║   ██║██║███╗██║██║╚██╔╝██║"
 echo "    ██║ ╚═╝ ██║██║  ██║██║ ╚████║╚██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚═╝ ██║"
 echo "    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝     ╚═╝"
-echo -e "${COLOR_YELLOW}             🥭 Gruvbox Dark Rice Installer by David 🥭${COLOR_RESET}\n"
+echo -e "${COLOR_YELLOW}             🥭 Gruvbox Dark Rice Installer by Misha 🥭${COLOR_RESET}\n"
 
 # Determine source directory (local clone or curl execution)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
 TEMP_DIR=""
 
-if [ ! -d "$SCRIPT_DIR/.config/mango" ]; then
+if [ -d "$SCRIPT_DIR/config/mango" ]; then
+    SOURCE_CONFIG="$SCRIPT_DIR/config"
+elif [ -d "$SCRIPT_DIR/.config/mango" ]; then
+    SOURCE_CONFIG="$SCRIPT_DIR/.config"
+else
     echo -e "${COLOR_AQUA}⬇️  Remote installation detected! Cloning repository...${COLOR_RESET}"
     TEMP_DIR=$(mktemp -d)
     git clone --depth 1 https://github.com/davidykmisha2015-prog/mangowm-dotfiles.git "$TEMP_DIR"
-    SOURCE_CONFIG="$TEMP_DIR/.config"
-else
-    SOURCE_CONFIG="$SCRIPT_DIR/.config"
+    if [ -d "$TEMP_DIR/config" ]; then
+        SOURCE_CONFIG="$TEMP_DIR/config"
+    else
+        SOURCE_CONFIG="$TEMP_DIR/.config"
+    fi
 fi
 
 CONFIG_TARGET="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -91,6 +97,20 @@ done
 # Ensure scripts inside mango are executable
 if [ -d "$CONFIG_TARGET/mango/scripts" ]; then
     chmod +x "$CONFIG_TARGET/mango/scripts/"*.sh 2>/dev/null || true
+fi
+
+# Install curated Gruvbox wallpapers
+WALL_SRC=""
+if [ -d "$SCRIPT_DIR/wallpapers" ]; then
+    WALL_SRC="$SCRIPT_DIR/wallpapers"
+elif [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR/wallpapers" ]; then
+    WALL_SRC="$TEMP_DIR/wallpapers"
+fi
+
+if [ -n "$WALL_SRC" ]; then
+    echo -e "   ${COLOR_AQUA}Installing wallpapers:${COLOR_RESET} $HOME/Pictures/wallpapers"
+    mkdir -p "$HOME/Pictures/wallpapers"
+    cp -r "$WALL_SRC"/* "$HOME/Pictures/wallpapers/"
 fi
 
 # Clean up temporary directory if used

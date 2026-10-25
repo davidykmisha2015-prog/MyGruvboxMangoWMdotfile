@@ -40,7 +40,13 @@
         "tooltip": false
     },
     "memory": {
-        "format": "  {}%"
+        "interval": 2,
+        "format": "  {percentage}%",
+        "states": {
+            "warning": 75,
+            "critical": 90
+        },
+        "tooltip-format": "Пам'ять: {used:0.1f}GiB / {total:0.1f}GiB ({percentage}%)\nСвоп: {swapUsed:0.1f}GiB / {swapTotal:0.1f}GiB"
     },
     "network": {
         "format-wifi": "󰖩  {essid}",
