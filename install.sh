@@ -143,6 +143,40 @@ if [ -n "$WALL_SRC" ]; then
     cp -r "$WALL_SRC"/* "$HOME/Pictures/wallpapers/"
 fi
 
+# Auto-install Nerd Fonts (JetBrainsMono Nerd Font) if missing
+echo ""
+echo -e "${COLOR_YELLOW}🔤 Checking for JetBrainsMono Nerd Font...${COLOR_RESET}"
+if command -v fc-list >/dev/null 2>&1 && fc-list : family | grep -qi "JetBrainsMono.*Nerd"; then
+    echo -e "   [${COLOR_GREEN}✓${COLOR_RESET}] JetBrainsMono Nerd Font is already installed"
+else
+    echo -e "${COLOR_ORANGE}⬇️  JetBrainsMono Nerd Font not found. Installing automatically...${COLOR_RESET}"
+    if command -v pacman >/dev/null 2>&1; then
+        echo -e "   ${COLOR_AQUA}Installing ttf-jetbrains-mono-nerd via pacman...${COLOR_RESET}"
+        sudo pacman -S --needed ttf-jetbrains-mono-nerd 2>/dev/null || true
+    fi
+
+    # Fallback to direct user-level download to ~/.local/share/fonts (works on ANY distro without sudo)
+    if ! (command -v fc-list >/dev/null 2>&1 && fc-list : family | grep -qi "JetBrainsMono.*Nerd"); then
+        FONT_DIR="$HOME/.local/share/fonts/JetBrainsMonoNerd"
+        echo -e "   ${COLOR_AQUA}Downloading font from GitHub release to $FONT_DIR...${COLOR_RESET}"
+        mkdir -p "$FONT_DIR"
+        TEMP_FONT=$(mktemp -d)
+        if curl -sSL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz" -o "$TEMP_FONT/JetBrainsMono.tar.xz" 2>/dev/null; then
+            tar -xf "$TEMP_FONT/JetBrainsMono.tar.xz" -C "$FONT_DIR" 2>/dev/null || true
+            rm -rf "$TEMP_FONT"
+            if command -v fc-cache >/dev/null 2>&1; then
+                fc-cache -f "$FONT_DIR" >/dev/null 2>&1 || true
+            fi
+            echo -e "   [${COLOR_GREEN}✓${COLOR_RESET}] JetBrainsMono Nerd Font installed successfully!"
+        else
+            echo -e "   ${COLOR_RED}⚠️  Failed to download font. Please install ttf-jetbrains-mono-nerd manually.${COLOR_RESET}"
+            rm -rf "$TEMP_FONT"
+        fi
+    else
+        echo -e "   [${COLOR_GREEN}✓${COLOR_RESET}] JetBrainsMono Nerd Font installed successfully!"
+    fi
+fi
+
 # Clean up temporary directory if used
 [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"
 
