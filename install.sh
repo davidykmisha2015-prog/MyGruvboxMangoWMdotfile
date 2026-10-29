@@ -26,6 +26,66 @@ echo "    ██║ ╚═╝ ██║██║  ██║██║ ╚██�
 echo "    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝     ╚═╝"
 echo -e "${COLOR_YELLOW}             🥭 Gruvbox Dark Rice Installer by Misha 🥭${COLOR_RESET}\n"
 
+# Helper for interactive user prompt (supporting stdin, pipe, and curl)
+ask_user() {
+    local prompt="$1"
+    local default="${2:-n}"
+    local reply=""
+    if [ -t 0 ]; then
+        read -r -p "$prompt" reply
+    elif [ -e /dev/tty ]; then
+        read -r -p "$prompt" reply </dev/tty
+    else
+        reply="$default"
+    fi
+    echo "${reply:-$default}"
+}
+
+# Detect running Linux distribution
+detect_distro() {
+    local id="unknown"
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        id="${ID:-unknown}"
+        if [ "$id" = "unknown" ] && [ -n "$ID_LIKE" ]; then
+            id="$ID_LIKE"
+        fi
+    fi
+
+    if [ "$id" = "unknown" ]; then
+        if command -v nixos-rebuild >/dev/null 2>&1 || [ -d /etc/nixos ]; then
+            id="nixos"
+        elif command -v pacman >/dev/null 2>&1; then
+            id="arch"
+        elif command -v dnf >/dev/null 2>&1; then
+            id="fedora"
+        elif command -v apt-get >/dev/null 2>&1; then
+            id="debian"
+        elif command -v zypper >/dev/null 2>&1; then
+            id="opensuse"
+        elif command -v xbps-install >/dev/null 2>&1; then
+            id="void"
+        fi
+    fi
+    echo "$id"
+}
+
+get_distro_name() {
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        if [ -n "$PRETTY_NAME" ]; then
+            echo "$PRETTY_NAME"
+            return
+        elif [ -n "$NAME" ]; then
+            echo "$NAME"
+            return
+        fi
+    fi
+    echo "Unknown Linux"
+}
+
 # Determine source directory (local clone or curl execution)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
 TEMP_DIR=""
@@ -70,13 +130,7 @@ echo -e "${COLOR_BOLD}Target Configuration Directory:${COLOR_RESET} ${COLOR_AQUA
 echo ""
 
 # Ask user confirmation
-if [ -t 0 ]; then
-    read -r -p "Do you want to proceed with the installation? (y/N): " CONFIRM
-elif [ -e /dev/tty ]; then
-    read -r -p "Do you want to proceed with the installation? (y/N): " CONFIRM </dev/tty
-else
-    CONFIRM="y"
-fi
+CONFIRM=$(ask_user "Do you want to proceed with the installation? (y/N): " "n")
 
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     echo -e "${COLOR_RED}❌ Installation aborted by user.${COLOR_RESET}"
@@ -216,68 +270,172 @@ check_dep "Fastfetch (system info)" "fastfetch"
 # Automated package installation support
 if [ ${#MISSING[@]} -gt 0 ]; then
     echo ""
-    echo -e "${COLOR_YELLOW}⚠️  Some recommended tools are missing (${MISSING[*]}).${COLOR_RESET}"
+    echo -e "${COLOR_YELLOW}⚠️  Some recommended tools are missing: ${COLOR_ORANGE}${MISSING[*]}${COLOR_RESET}"
     
-    # Intelligent automatic installer for Arch Linux
-    if command -v pacman >/dev/null 2>&1; then
-        echo -e "${COLOR_ORANGE}👉 Arch Linux detected! Would you like to automatically install all missing tools?${COLOR_RESET}"
-        if [ -t 0 ]; then
-            read -r -p "Install all missing tools for Arch Linux? (y/N): " INSTALL_ALL
-        elif [ -e /dev/tty ]; then
-            read -r -p "Install all missing tools for Arch Linux? (y/N): " INSTALL_ALL </dev/tty
-        else
-            INSTALL_ALL="y"
-        fi
+    DISTRO_ID=$(detect_distro)
+    DISTRO_NAME=$(get_distro_name)
+    echo -e "   ${COLOR_BOLD}Detected system:${COLOR_RESET} ${COLOR_AQUA}$DISTRO_NAME ($DISTRO_ID)${COLOR_RESET}"
+    echo ""
+    
+    INSTALL_DEPS=$(ask_user "Would you like to install missing dependencies automatically? (Y/n): " "y")
+    if [[ "$INSTALL_DEPS" =~ ^[Yy]$ ]]; then
+        case "$DISTRO_ID" in
+            nixos)
+                echo ""
+                echo -e "${COLOR_AQUA}❄️  Виявлено NixOS ($DISTRO_NAME)!${COLOR_RESET}"
+                echo -e "${COLOR_YELLOW}${COLOR_BOLD}Друже, вибач, але на NixOS цей скрипт нічого встановити не зможе! 😅${COLOR_RESET}"
+                echo -e "${COLOR_GRAY}У NixOS пакети не встановлюються через класичний пакетний менеджер, тут усе налаштовується декларативно.${COLOR_RESET}"
+                echo ""
+                echo -e "${COLOR_ORANGE}📋 Ось готова інструкція, що додати до твого ${COLOR_BOLD}/etc/nixos/configuration.nix${COLOR_RESET} (або flake):"
+                echo -e "${COLOR_AQUA}──────────────────────────────────────────────────────────────────────${COLOR_RESET}"
+                cat << 'EOF'
+  # 1. Системні пакети оточення MangoWM:
+  environment.systemPackages = with pkgs; [
+    # Панелі та сповіщення
+    waybar
+    swaynotificationcenter
+    rofi-wayland
+    kitty
+    hyprlock
+    swww              # або awww для шпалер
+    fastfetch
 
-        if [[ "$INSTALL_ALL" =~ ^[Yy]$ ]]; then
-            OFFICIAL_PKGS=()
-            AUR_PKGS=()
+    # Скріншоти та буфер обміну
+    satty
+    grim
+    slurp
+    wl-clipboard
 
-            for m in "${MISSING[@]}"; do
-                case "$m" in
-                    "Waybar") OFFICIAL_PKGS+=("waybar") ;;
-                    "SwayNC") OFFICIAL_PKGS+=("sway-notification-center") ;;
-                    "Rofi") OFFICIAL_PKGS+=("rofi-wayland") ;;
-                    "Kitty") OFFICIAL_PKGS+=("kitty") ;;
-                    "Hyprlock (lockscreen)") OFFICIAL_PKGS+=("hyprlock") ;;
-                    "Grim (screenshots)") OFFICIAL_PKGS+=("grim") ;;
-                    "Slurp (region selection)") OFFICIAL_PKGS+=("slurp") ;;
-                    "wl-clipboard (clipboard)") OFFICIAL_PKGS+=("wl-clipboard") ;;
-                    "Bluetooth Manager") OFFICIAL_PKGS+=("bluez" "bluez-utils" "blueman") ;;
-                    "Playerctl (music in lockscreen)") OFFICIAL_PKGS+=("playerctl") ;;
-                    "Fastfetch (system info)") OFFICIAL_PKGS+=("fastfetch") ;;
-                    "Awww/Swww (wallpapers)") AUR_PKGS+=("swww") ;;
-                    "Satty (screenshots)") AUR_PKGS+=("satty") ;;
-                    "MangoWM") AUR_PKGS+=("mangowm-git") ;;
-                esac
-            done
+    # Керування медіа та звуком
+    playerctl
+    pavucontrol
 
-            # Ensure Nerd Font is always installed for icons
-            OFFICIAL_PKGS+=("ttf-jetbrains-mono-nerd")
+    # Менеджер Bluetooth
+    blueman
+  ];
 
-            if [ ${#OFFICIAL_PKGS[@]} -gt 0 ]; then
-                echo -e "${COLOR_AQUA}📦 Installing official packages via pacman (${OFFICIAL_PKGS[*]})...${COLOR_RESET}"
-                sudo pacman -S --needed "${OFFICIAL_PKGS[@]}"
-                sudo systemctl enable --now bluetooth 2>/dev/null || true
-                rfkill unblock bluetooth 2>/dev/null || true
-            fi
+  # 2. Налаштування Bluetooth (щоб працював з коробки):
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+  services.blueman.enable = true;
 
-            if [ ${#AUR_PKGS[@]} -gt 0 ]; then
-                echo -e "${COLOR_AQUA}📦 Installing AUR packages (${AUR_PKGS[*]})...${COLOR_RESET}"
-                if command -v yay >/dev/null 2>&1; then
-                    yay -S --needed "${AUR_PKGS[@]}"
-                elif command -v paru >/dev/null 2>&1; then
-                    paru -S --needed "${AUR_PKGS[@]}"
-                else
-                    echo -e "${COLOR_YELLOW}⚠️  AUR helper not found. Please install manually via yay/paru: yay -S ${AUR_PKGS[*]}${COLOR_RESET}"
+  # 3. Шрифти Nerd Fonts (для іконок Waybar):
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+  ];
+EOF
+                echo -e "${COLOR_AQUA}──────────────────────────────────────────────────────────────────────${COLOR_RESET}"
+                echo -e "Після додавання у конфіг збережи файл та виконай:"
+                echo -e "  ${COLOR_BOLD}${COLOR_GREEN}sudo nixos-rebuild switch${COLOR_RESET}\n"
+                ;;
+            arch|manjaro|endeavouros|cachyos|artix|garuda)
+                echo ""
+                echo -e "${COLOR_AQUA}📦 Arch Linux detected ($DISTRO_NAME)! Installing packages...${COLOR_RESET}"
+                OFFICIAL_PKGS=()
+                AUR_PKGS=()
+
+                for m in "${MISSING[@]}"; do
+                    case "$m" in
+                        "Waybar") OFFICIAL_PKGS+=("waybar") ;;
+                        "SwayNC") OFFICIAL_PKGS+=("sway-notification-center") ;;
+                        "Rofi") OFFICIAL_PKGS+=("rofi-wayland") ;;
+                        "Kitty") OFFICIAL_PKGS+=("kitty") ;;
+                        "Hyprlock (lockscreen)") OFFICIAL_PKGS+=("hyprlock") ;;
+                        "Grim (screenshots)") OFFICIAL_PKGS+=("grim") ;;
+                        "Slurp (region selection)") OFFICIAL_PKGS+=("slurp") ;;
+                        "wl-clipboard (clipboard)") OFFICIAL_PKGS+=("wl-clipboard") ;;
+                        "Bluetooth Manager") OFFICIAL_PKGS+=("bluez" "bluez-utils" "blueman") ;;
+                        "Playerctl (music in lockscreen)") OFFICIAL_PKGS+=("playerctl") ;;
+                        "Fastfetch (system info)") OFFICIAL_PKGS+=("fastfetch") ;;
+                        "Awww/Swww (wallpapers)") AUR_PKGS+=("swww") ;;
+                        "Satty (screenshots)") AUR_PKGS+=("satty") ;;
+                        "MangoWM") AUR_PKGS+=("mangowm-git") ;;
+                    esac
+                done
+
+                # Ensure Nerd Font is always installed for icons
+                OFFICIAL_PKGS+=("ttf-jetbrains-mono-nerd")
+
+                if [ ${#OFFICIAL_PKGS[@]} -gt 0 ]; then
+                    echo -e "${COLOR_AQUA}📦 Installing official packages via pacman (${OFFICIAL_PKGS[*]})...${COLOR_RESET}"
+                    sudo pacman -S --needed "${OFFICIAL_PKGS[@]}"
+                    sudo systemctl enable --now bluetooth 2>/dev/null || true
+                    rfkill unblock bluetooth 2>/dev/null || true
                 fi
-            fi
-        fi
+
+                if [ ${#AUR_PKGS[@]} -gt 0 ]; then
+                    echo -e "${COLOR_AQUA}📦 Installing AUR packages (${AUR_PKGS[*]})...${COLOR_RESET}"
+                    if command -v yay >/dev/null 2>&1; then
+                        yay -S --needed "${AUR_PKGS[@]}"
+                    elif command -v paru >/dev/null 2>&1; then
+                        paru -S --needed "${AUR_PKGS[@]}"
+                    else
+                        echo -e "${COLOR_YELLOW}⚠️  AUR helper not found. Please install manually: yay -S ${AUR_PKGS[*]}${COLOR_RESET}"
+                    fi
+                fi
+                ;;
+            fedora|nobara|rhel|centos)
+                echo ""
+                echo -e "${COLOR_AQUA}📦 Fedora detected ($DISTRO_NAME)! Installing packages...${COLOR_RESET}"
+                FEDORA_PKGS=()
+                for m in "${MISSING[@]}"; do
+                    case "$m" in
+                        "Waybar") FEDORA_PKGS+=("waybar") ;;
+                        "SwayNC") FEDORA_PKGS+=("sway-notification-center") ;;
+                        "Rofi") FEDORA_PKGS+=("rofi-wayland") ;;
+                        "Kitty") FEDORA_PKGS+=("kitty") ;;
+                        "Hyprlock (lockscreen)") FEDORA_PKGS+=("hyprlock") ;;
+                        "Grim (screenshots)") FEDORA_PKGS+=("grim") ;;
+                        "Slurp (region selection)") FEDORA_PKGS+=("slurp") ;;
+                        "wl-clipboard (clipboard)") FEDORA_PKGS+=("wl-clipboard") ;;
+                        "Bluetooth Manager") FEDORA_PKGS+=("bluez" "blueman") ;;
+                        "Playerctl (music in lockscreen)") FEDORA_PKGS+=("playerctl") ;;
+                        "Fastfetch (system info)") FEDORA_PKGS+=("fastfetch") ;;
+                    esac
+                done
+                if [ ${#FEDORA_PKGS[@]} -gt 0 ]; then
+                    echo -e "${COLOR_AQUA}📦 Installing packages via dnf (${FEDORA_PKGS[*]})...${COLOR_RESET}"
+                    sudo dnf install -y "${FEDORA_PKGS[@]}"
+                    sudo systemctl enable --now bluetooth 2>/dev/null || true
+                fi
+                ;;
+            ubuntu|debian|pop|linuxmint|elementary|zorin|kali)
+                echo ""
+                echo -e "${COLOR_AQUA}📦 Debian/Ubuntu detected ($DISTRO_NAME)! Installing packages...${COLOR_RESET}"
+                DEB_PKGS=()
+                for m in "${MISSING[@]}"; do
+                    case "$m" in
+                        "Waybar") DEB_PKGS+=("waybar") ;;
+                        "Rofi") DEB_PKGS+=("rofi") ;;
+                        "Kitty") DEB_PKGS+=("kitty") ;;
+                        "Grim (screenshots)") DEB_PKGS+=("grim") ;;
+                        "Slurp (region selection)") DEB_PKGS+=("slurp") ;;
+                        "wl-clipboard (clipboard)") DEB_PKGS+=("wl-clipboard") ;;
+                        "Bluetooth Manager") DEB_PKGS+=("bluez" "blueman") ;;
+                        "Playerctl (music in lockscreen)") DEB_PKGS+=("playerctl") ;;
+                        "Fastfetch (system info)") DEB_PKGS+=("fastfetch") ;;
+                    esac
+                done
+                if [ ${#DEB_PKGS[@]} -gt 0 ]; then
+                    echo -e "${COLOR_AQUA}📦 Installing packages via apt (${DEB_PKGS[*]})...${COLOR_RESET}"
+                    sudo apt update && sudo apt install -y "${DEB_PKGS[@]}"
+                    sudo systemctl enable --now bluetooth 2>/dev/null || true
+                fi
+                echo -e "${COLOR_YELLOW}ℹ️  Note: Some packages (MangoWM, SwayNC, Hyprlock) may need to be compiled from source on Debian/Ubuntu.${COLOR_RESET}"
+                ;;
+            *)
+                echo ""
+                echo -e "${COLOR_YELLOW}⚠️  Automatic package installation is not available for $DISTRO_NAME ($DISTRO_ID).${COLOR_RESET}"
+                echo -e "   Please install the missing packages manually using your package manager:"
+                echo -e "   ${COLOR_BOLD}${MISSING[*]}${COLOR_RESET}"
+                ;;
+        esac
     else
-        echo -e "   ${COLOR_GRAY}Arch Linux:${COLOR_RESET} sudo pacman -S waybar swaync rofi-wayland kitty hyprlock grim slurp wl-clipboard playerctl fastfetch ttf-jetbrains-mono-nerd && yay -S swww satty mangowm-git"
-        echo -e "   ${COLOR_GRAY}NixOS:${COLOR_RESET}      Add mango, waybar, swaync, rofi, kitty, hyprlock, satty, grim, slurp, wl-clipboard, playerctl, fastfetch"
-        echo -e "   ${COLOR_GRAY}Fedora:${COLOR_RESET}     sudo dnf install waybar swaync rofi-wayland kitty hyprlock grim slurp wl-clipboard playerctl fastfetch"
+        echo -e "   ${COLOR_GRAY}Skipped dependency installation.${COLOR_RESET}"
     fi
+else
+    echo ""
+    echo -e "${COLOR_GREEN}✅ All recommended dependencies are already installed!${COLOR_RESET}"
 fi
 
 echo ""
