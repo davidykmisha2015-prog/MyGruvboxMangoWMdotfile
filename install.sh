@@ -88,7 +88,7 @@ echo ""
 echo -e "${COLOR_YELLOW}📦 Checking for existing configs to backup...${COLOR_RESET}"
 
 # Backup existing configs if present
-for item in mango waybar swaync rofi kitty xdg-desktop-portal-wlr xdg-desktop-portal; do
+for item in mango waybar swaync rofi kitty hypr fastfetch xdg-desktop-portal-wlr xdg-desktop-portal; do
     if [ -d "$CONFIG_TARGET/$item" ]; then
         if [ "$BACKUP_MADE" = false ]; then
             mkdir -p "$BACKUP_DIR"
@@ -110,7 +110,7 @@ echo -e "${COLOR_ORANGE}🚀 Installing new dotfiles...${COLOR_RESET}"
 
 mkdir -p "$CONFIG_TARGET"
 
-for app in mango waybar swaync rofi kitty xdg-desktop-portal-wlr xdg-desktop-portal; do
+for app in mango waybar swaync rofi kitty hypr fastfetch xdg-desktop-portal-wlr xdg-desktop-portal; do
     if [ -d "$SOURCE_CONFIG/$app" ]; then
         echo -e "   ${COLOR_AQUA}Installing:${COLOR_RESET} $CONFIG_TARGET/$app"
         mkdir -p "$CONFIG_TARGET/$app"
@@ -118,9 +118,12 @@ for app in mango waybar swaync rofi kitty xdg-desktop-portal-wlr xdg-desktop-por
     fi
 done
 
-# Ensure scripts inside mango are executable
+# Ensure scripts inside mango and hypr are executable
 if [ -d "$CONFIG_TARGET/mango/scripts" ]; then
     chmod +x "$CONFIG_TARGET/mango/scripts/"*.sh 2>/dev/null || true
+fi
+if [ -d "$CONFIG_TARGET/hypr/scripts" ]; then
+    chmod +x "$CONFIG_TARGET/hypr/scripts/"*.sh 2>/dev/null || true
 fi
 
 # Reload XDG Desktop Portals to apply screen sharing settings immediately
@@ -166,58 +169,77 @@ check_dep "Waybar" "waybar"
 check_dep "SwayNC" "swaync" "sway-notification-center"
 check_dep "Rofi" "rofi"
 check_dep "Kitty" "kitty"
+check_dep "Hyprlock (lockscreen)" "hyprlock"
 check_dep "Awww/Swww (wallpapers)" "awww" "swww"
 check_dep "Satty (screenshots)" "satty"
 check_dep "Grim (screenshots)" "grim"
 check_dep "Slurp (region selection)" "slurp"
-check_dep "wl-clipboard (copy to clipboard)" "wl-copy"
+check_dep "wl-clipboard (clipboard)" "wl-copy"
+check_dep "Playerctl (music in lockscreen)" "playerctl"
+check_dep "Fastfetch (system info)" "fastfetch"
 
-# Specific assistance for screenshot tools (Win + Shift + S)
-SCREENSHOT_MISSING=()
-for tool in grim slurp satty wl-copy; do
-    if ! command -v "$tool" >/dev/null 2>&1; then
-        SCREENSHOT_MISSING+=("$tool")
-    fi
-done
-
-if [ ${#SCREENSHOT_MISSING[@]} -gt 0 ]; then
+# Automated package installation support
+if [ ${#MISSING[@]} -gt 0 ]; then
     echo ""
-    echo -e "${COLOR_ORANGE}📸 Screenshot tools missing for (Win + Shift + S): ${SCREENSHOT_MISSING[*]}${COLOR_RESET}"
+    echo -e "${COLOR_YELLOW}⚠️  Some recommended tools are missing (${MISSING[*]}).${COLOR_RESET}"
     
-    # Offer automatic installation on Arch Linux
+    # Intelligent automatic installer for Arch Linux
     if command -v pacman >/dev/null 2>&1; then
-        echo -e "${COLOR_YELLOW}👉 Arch Linux detected! Would you like to install them now?${COLOR_RESET}"
+        echo -e "${COLOR_ORANGE}👉 Arch Linux detected! Would you like to automatically install all missing tools?${COLOR_RESET}"
         if [ -t 0 ]; then
-            read -r -p "Install screenshot & clipboard tools (grim, slurp, wl-clipboard, satty)? (y/N): " INSTALL_SHOT
+            read -r -p "Install all missing tools for Arch Linux? (y/N): " INSTALL_ALL
         elif [ -e /dev/tty ]; then
-            read -r -p "Install screenshot & clipboard tools (grim, slurp, wl-clipboard, satty)? (y/N): " INSTALL_SHOT </dev/tty
+            read -r -p "Install all missing tools for Arch Linux? (y/N): " INSTALL_ALL </dev/tty
         else
-            INSTALL_SHOT="y"
+            INSTALL_ALL="y"
         fi
 
-        if [[ "$INSTALL_SHOT" =~ ^[Yy]$ ]]; then
-            if command -v yay >/dev/null 2>&1; then
-                yay -S --needed grim slurp wl-clipboard satty
-            elif command -v paru >/dev/null 2>&1; then
-                paru -S --needed grim slurp wl-clipboard satty
-            else
-                sudo pacman -S --needed grim slurp wl-clipboard
-                if [[ " ${SCREENSHOT_MISSING[*]} " =~ " satty " ]]; then
-                    echo -e "${COLOR_YELLOW}⚠️  Note: 'satty' is in AUR. Please install it via your AUR helper: yay -S satty${COLOR_RESET}"
+        if [[ "$INSTALL_ALL" =~ ^[Yy]$ ]]; then
+            OFFICIAL_PKGS=()
+            AUR_PKGS=()
+
+            for m in "${MISSING[@]}"; do
+                case "$m" in
+                    "Waybar") OFFICIAL_PKGS+=("waybar") ;;
+                    "SwayNC") OFFICIAL_PKGS+=("sway-notification-center") ;;
+                    "Rofi") OFFICIAL_PKGS+=("rofi-wayland") ;;
+                    "Kitty") OFFICIAL_PKGS+=("kitty") ;;
+                    "Hyprlock (lockscreen)") OFFICIAL_PKGS+=("hyprlock") ;;
+                    "Grim (screenshots)") OFFICIAL_PKGS+=("grim") ;;
+                    "Slurp (region selection)") OFFICIAL_PKGS+=("slurp") ;;
+                    "wl-clipboard (clipboard)") OFFICIAL_PKGS+=("wl-clipboard") ;;
+                    "Playerctl (music in lockscreen)") OFFICIAL_PKGS+=("playerctl") ;;
+                    "Fastfetch (system info)") OFFICIAL_PKGS+=("fastfetch") ;;
+                    "Awww/Swww (wallpapers)") AUR_PKGS+=("swww") ;;
+                    "Satty (screenshots)") AUR_PKGS+=("satty") ;;
+                    "MangoWM") AUR_PKGS+=("mangowm-git") ;;
+                esac
+            done
+
+            # Ensure Nerd Font is always installed for icons
+            OFFICIAL_PKGS+=("ttf-jetbrains-mono-nerd")
+
+            if [ ${#OFFICIAL_PKGS[@]} -gt 0 ]; then
+                echo -e "${COLOR_AQUA}📦 Installing official packages via pacman (${OFFICIAL_PKGS[*]})...${COLOR_RESET}"
+                sudo pacman -S --needed "${OFFICIAL_PKGS[@]}"
+            fi
+
+            if [ ${#AUR_PKGS[@]} -gt 0 ]; then
+                echo -e "${COLOR_AQUA}📦 Installing AUR packages (${AUR_PKGS[*]})...${COLOR_RESET}"
+                if command -v yay >/dev/null 2>&1; then
+                    yay -S --needed "${AUR_PKGS[@]}"
+                elif command -v paru >/dev/null 2>&1; then
+                    paru -S --needed "${AUR_PKGS[@]}"
+                else
+                    echo -e "${COLOR_YELLOW}⚠️  AUR helper not found. Please install manually via yay/paru: yay -S ${AUR_PKGS[*]}${COLOR_RESET}"
                 fi
             fi
         fi
     else
-        echo -e "   ${COLOR_GRAY}Arch Linux:${COLOR_RESET} sudo pacman -S grim slurp wl-clipboard && yay -S satty"
-        echo -e "   ${COLOR_GRAY}NixOS:${COLOR_RESET}      Add satty, grim, slurp, wl-clipboard to configuration.nix"
-        echo -e "   ${COLOR_GRAY}Fedora:${COLOR_RESET}     sudo dnf install grim slurp wl-clipboard satty"
+        echo -e "   ${COLOR_GRAY}Arch Linux:${COLOR_RESET} sudo pacman -S waybar swaync rofi-wayland kitty hyprlock grim slurp wl-clipboard playerctl fastfetch ttf-jetbrains-mono-nerd && yay -S swww satty mangowm-git"
+        echo -e "   ${COLOR_GRAY}NixOS:${COLOR_RESET}      Add mango, waybar, swaync, rofi, kitty, hyprlock, satty, grim, slurp, wl-clipboard, playerctl, fastfetch"
+        echo -e "   ${COLOR_GRAY}Fedora:${COLOR_RESET}     sudo dnf install waybar swaync rofi-wayland kitty hyprlock grim slurp wl-clipboard playerctl fastfetch"
     fi
-fi
-
-if [ ${#MISSING[@]} -gt 0 ]; then
-    echo ""
-    echo -e "${COLOR_YELLOW}⚠️  Some desktop components are missing (${MISSING[*]}).${COLOR_RESET}"
-    echo "   Install them using your package manager (e.g., pacman, yay, nix, dnf, apt)."
 fi
 
 echo ""
