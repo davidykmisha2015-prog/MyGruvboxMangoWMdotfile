@@ -135,17 +135,31 @@ fi
 
 echo ""
 echo -e "${COLOR_YELLOW}🔍 Checking required dependencies on your system:${COLOR_RESET}"
-DEPS=("mangowm" "waybar" "swaync" "rofi" "kitty" "awww")
 MISSING=()
 
-for dep in "${DEPS[@]}"; do
-    if command -v "$dep" >/dev/null 2>&1; then
-        echo -e "   [${COLOR_GREEN}✓${COLOR_RESET}] $dep is installed"
-    else
-        echo -e "   [${COLOR_RED}✗${COLOR_RESET}] $dep is ${COLOR_RED}NOT${COLOR_RESET} installed"
-        MISSING+=("$dep")
-    fi
-done
+check_dep() {
+    local name="$1"
+    shift
+    for cmd in "$@"; do
+        if command -v "$cmd" >/dev/null 2>&1; then
+            echo -e "   [${COLOR_GREEN}✓${COLOR_RESET}] $name is installed (${COLOR_GRAY}$cmd${COLOR_RESET})"
+            return 0
+        fi
+    done
+    echo -e "   [${COLOR_RED}✗${COLOR_RESET}] $name is ${COLOR_RED}NOT${COLOR_RESET} installed"
+    MISSING+=("$name")
+    return 1
+}
+
+check_dep "MangoWM" "mango" "mangowm" "mangowc"
+check_dep "Waybar" "waybar"
+check_dep "SwayNC" "swaync" "sway-notification-center"
+check_dep "Rofi" "rofi"
+check_dep "Kitty" "kitty"
+check_dep "Awww/Swww (wallpapers)" "awww" "swww"
+check_dep "Satty (screenshots)" "satty"
+check_dep "Grim (screenshots)" "grim"
+check_dep "Slurp (region selection)" "slurp"
 
 if [ ${#MISSING[@]} -gt 0 ]; then
     echo ""
