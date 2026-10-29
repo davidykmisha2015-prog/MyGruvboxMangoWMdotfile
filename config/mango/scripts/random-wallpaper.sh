@@ -8,9 +8,21 @@ if [ ! -d "$WALL_DIR" ]; then
     mkdir -p "$WALL_DIR"
 fi
 
-# Запуск демона awww-daemon, якщо він ще не запущений
-if ! awww query >/dev/null 2>&1; then
-    awww-daemon &
+# Визначаємо доступну утиліту для шпалер (awww або swww)
+if command -v awww >/dev/null 2>&1; then
+    WALL_CMD="awww"
+    WALL_DAEMON="awww-daemon"
+elif command -v swww >/dev/null 2>&1; then
+    WALL_CMD="swww"
+    WALL_DAEMON="swww-daemon"
+else
+    notify-send -u critical "Шпалери" "Не знайдено awww або swww! Встановіть swww або awww."
+    exit 1
+fi
+
+# Запуск демона, якщо він ще не запущений
+if ! $WALL_CMD query >/dev/null 2>&1; then
+    $WALL_DAEMON &
     sleep 0.5
 fi
 
@@ -54,7 +66,7 @@ CHOSEN_POS="${POSITIONS[RANDOM % ${#POSITIONS[@]}]}"
 CHOSEN_ANGLE=$((RANDOM % 360))
 
 # Встановлюємо шпалери з обраною анімацією на 165 Гц
-awww img "$NEW_WALL" \
+$WALL_CMD img "$NEW_WALL" \
     --transition-type "$CHOSEN_TRANS" \
     --transition-pos "$CHOSEN_POS" \
     --transition-angle "$CHOSEN_ANGLE" \
