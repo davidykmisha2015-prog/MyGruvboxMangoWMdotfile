@@ -14,3 +14,13 @@ fi
 
 # Restart portals for screen sharing and file pickers
 systemctl --user restart xdg-desktop-portal-wlr xdg-desktop-portal 2>/dev/null || true
+
+# Ensure Bluetooth is unblocked and powered on by default
+rfkill unblock bluetooth 2>/dev/null || true
+bluetoothctl power on 2>/dev/null || true
+
+# Start blueman tray applet if installed
+if command -v blueman-applet >/dev/null 2>&1; then
+    pkill -f blueman-applet 2>/dev/null || true
+    blueman-applet &
+fi

@@ -209,6 +209,7 @@ check_dep "Satty (screenshots)" "satty"
 check_dep "Grim (screenshots)" "grim"
 check_dep "Slurp (region selection)" "slurp"
 check_dep "wl-clipboard (clipboard)" "wl-copy"
+check_dep "Bluetooth Manager" "blueman-manager" "overskride"
 check_dep "Playerctl (music in lockscreen)" "playerctl"
 check_dep "Fastfetch (system info)" "fastfetch"
 
@@ -242,6 +243,7 @@ if [ ${#MISSING[@]} -gt 0 ]; then
                     "Grim (screenshots)") OFFICIAL_PKGS+=("grim") ;;
                     "Slurp (region selection)") OFFICIAL_PKGS+=("slurp") ;;
                     "wl-clipboard (clipboard)") OFFICIAL_PKGS+=("wl-clipboard") ;;
+                    "Bluetooth Manager") OFFICIAL_PKGS+=("bluez" "bluez-utils" "blueman") ;;
                     "Playerctl (music in lockscreen)") OFFICIAL_PKGS+=("playerctl") ;;
                     "Fastfetch (system info)") OFFICIAL_PKGS+=("fastfetch") ;;
                     "Awww/Swww (wallpapers)") AUR_PKGS+=("swww") ;;
@@ -256,6 +258,8 @@ if [ ${#MISSING[@]} -gt 0 ]; then
             if [ ${#OFFICIAL_PKGS[@]} -gt 0 ]; then
                 echo -e "${COLOR_AQUA}📦 Installing official packages via pacman (${OFFICIAL_PKGS[*]})...${COLOR_RESET}"
                 sudo pacman -S --needed "${OFFICIAL_PKGS[@]}"
+                sudo systemctl enable --now bluetooth 2>/dev/null || true
+                rfkill unblock bluetooth 2>/dev/null || true
             fi
 
             if [ ${#AUR_PKGS[@]} -gt 0 ]; then

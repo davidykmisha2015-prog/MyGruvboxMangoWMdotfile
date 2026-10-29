@@ -64,6 +64,7 @@ window#waybar {
 #cpu,
 #memory,
 #network,
+#bluetooth,
 #pulseaudio,
 #tray,
 #custom-notification,
@@ -99,6 +100,19 @@ window#waybar {
 
 #network {
     color: #8ec07c;
+}
+
+#bluetooth {
+    color: #83a598;
+}
+
+#bluetooth.connected {
+    color: #b8bb26;
+}
+
+#bluetooth.disabled,
+#bluetooth.off {
+    color: #928374;
 }
 
 #cpu {

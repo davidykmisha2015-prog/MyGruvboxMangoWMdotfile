@@ -59,6 +59,7 @@ The default modifier key is `SUPER` (`Win` key):
 | `SUPER + Return` | Launch **Kitty** terminal |
 | `SUPER + d` | Open **Rofi** application menu |
 | `SUPER + n` | Toggle **SwayNC** notification center |
+| `SUPER + b` | Open Bluetooth Manager (**Blueman**) |
 | `SUPER + w` | Cycle random wallpaper with 165Hz transition |
 | `SUPER + q` | Close focused window (`killclient`) |
 | `SUPER + r` | Reload MangoWM configuration on the fly |
