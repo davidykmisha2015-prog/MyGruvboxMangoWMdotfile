@@ -35,9 +35,26 @@ if [ -d "$SCRIPT_DIR/config/mango" ]; then
 elif [ -d "$SCRIPT_DIR/.config/mango" ]; then
     SOURCE_CONFIG="$SCRIPT_DIR/.config"
 else
-    echo -e "${COLOR_AQUA}⬇️  Remote installation detected! Cloning repository...${COLOR_RESET}"
+    echo -e "${COLOR_AQUA}⬇️  Remote installation detected! Downloading dotfiles...${COLOR_RESET}"
     TEMP_DIR=$(mktemp -d)
-    git clone --depth 1 https://github.com/davidykmisha2015-prog/MyGruvboxMangoWMdotfile.git "$TEMP_DIR"
+
+    # Disable git authentication prompt completely so it never asks for login
+    export GIT_TERMINAL_PROMPT=0
+
+    # Try fast git clone anonymously, fallback to direct tarball download
+    if command -v git >/dev/null 2>&1 && git clone --depth 1 https://github.com/davidykmisha2015-prog/MyGruvboxMangoWMdotfile.git "$TEMP_DIR" 2>/dev/null; then
+        echo -e "   ${COLOR_GREEN}✓ Cloned via Git anonymously${COLOR_RESET}"
+    else
+        echo -e "   ${COLOR_YELLOW}📦 Downloading archive via curl directly (zero auth)...${COLOR_RESET}"
+        if curl -sSL "https://github.com/davidykmisha2015-prog/MyGruvboxMangoWMdotfile/archive/refs/heads/main.tar.gz" | tar -xz -C "$TEMP_DIR" --strip-components=1 2>/dev/null; then
+            echo -e "   ${COLOR_GREEN}✓ Archive downloaded and extracted successfully${COLOR_RESET}"
+        else
+            echo -e "${COLOR_RED}❌ Failed to download dotfiles. Please check your internet connection.${COLOR_RESET}"
+            rm -rf "$TEMP_DIR"
+            exit 1
+        fi
+    fi
+
     if [ -d "$TEMP_DIR/config" ]; then
         SOURCE_CONFIG="$TEMP_DIR/config"
     else
