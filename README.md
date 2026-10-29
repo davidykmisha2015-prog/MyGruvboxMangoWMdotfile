@@ -27,6 +27,10 @@
 - **Dynamic Wallpaper Engine**: Automated script powered by `awww` featuring 165Hz cubic-bezier animated transitions (`grow`, `wave`, `outer`, `wipe`).
 - **Display Optimization**: Default profile tuned for Ultrawide 3440x1440 @ 165Hz (easily configurable for any monitor in `mango/config.conf`).
 
+## WARNING!
+Pls if your read it remember. This solution notfor new users in linux.
+
+
 ---
 
 ## 📂 Repository Structure
