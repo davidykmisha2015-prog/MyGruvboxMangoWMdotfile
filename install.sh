@@ -81,7 +81,7 @@ echo ""
 echo -e "${COLOR_YELLOW}📦 Checking for existing configs to backup...${COLOR_RESET}"
 
 # Backup existing configs if present
-for item in mango waybar swaync rofi kitty; do
+for item in mango waybar swaync rofi kitty xdg-desktop-portal-wlr xdg-desktop-portal; do
     if [ -d "$CONFIG_TARGET/$item" ]; then
         if [ "$BACKUP_MADE" = false ]; then
             mkdir -p "$BACKUP_DIR"
@@ -103,7 +103,7 @@ echo -e "${COLOR_ORANGE}🚀 Installing new dotfiles...${COLOR_RESET}"
 
 mkdir -p "$CONFIG_TARGET"
 
-for app in mango waybar swaync rofi kitty; do
+for app in mango waybar swaync rofi kitty xdg-desktop-portal-wlr xdg-desktop-portal; do
     if [ -d "$SOURCE_CONFIG/$app" ]; then
         echo -e "   ${COLOR_AQUA}Installing:${COLOR_RESET} $CONFIG_TARGET/$app"
         mkdir -p "$CONFIG_TARGET/$app"
@@ -115,6 +115,9 @@ done
 if [ -d "$CONFIG_TARGET/mango/scripts" ]; then
     chmod +x "$CONFIG_TARGET/mango/scripts/"*.sh 2>/dev/null || true
 fi
+
+# Reload XDG Desktop Portals to apply screen sharing settings immediately
+systemctl --user restart xdg-desktop-portal-wlr xdg-desktop-portal 2>/dev/null || true
 
 # Install curated Gruvbox wallpapers
 WALL_SRC=""
