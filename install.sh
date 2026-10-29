@@ -70,7 +70,14 @@ echo -e "${COLOR_BOLD}Target Configuration Directory:${COLOR_RESET} ${COLOR_AQUA
 echo ""
 
 # Ask user confirmation
-read -r -p "Do you want to proceed with the installation? (y/N): " CONFIRM
+if [ -t 0 ]; then
+    read -r -p "Do you want to proceed with the installation? (y/N): " CONFIRM
+elif [ -e /dev/tty ]; then
+    read -r -p "Do you want to proceed with the installation? (y/N): " CONFIRM </dev/tty
+else
+    CONFIRM="y"
+fi
+
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     echo -e "${COLOR_RED}❌ Installation aborted by user.${COLOR_RESET}"
     [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"
@@ -180,7 +187,14 @@ if [ ${#SCREENSHOT_MISSING[@]} -gt 0 ]; then
     # Offer automatic installation on Arch Linux
     if command -v pacman >/dev/null 2>&1; then
         echo -e "${COLOR_YELLOW}👉 Arch Linux detected! Would you like to install them now?${COLOR_RESET}"
-        read -r -p "Install screenshot utilities? (y/N): " INSTALL_SHOT
+        if [ -t 0 ]; then
+            read -r -p "Install screenshot & clipboard tools (grim, slurp, wl-clipboard, satty)? (y/N): " INSTALL_SHOT
+        elif [ -e /dev/tty ]; then
+            read -r -p "Install screenshot & clipboard tools (grim, slurp, wl-clipboard, satty)? (y/N): " INSTALL_SHOT </dev/tty
+        else
+            INSTALL_SHOT="y"
+        fi
+
         if [[ "$INSTALL_SHOT" =~ ^[Yy]$ ]]; then
             if command -v yay >/dev/null 2>&1; then
                 yay -S --needed grim slurp wl-clipboard satty
