@@ -71,6 +71,7 @@ The default modifier key is `SUPER` (`Win` key):
 | `SUPER + Shift + Arrows` | Move active window in directional grid |
 | `SUPER + 1..9` | Switch to workspace / tag 1–9 |
 | `SUPER + Shift + 1..9` | Move window to workspace / tag 1–9 |
+| `SUPER + Shift + s` | Interactive screenshot area & annotate with **Satty** (auto-copies to clipboard) |
 | `SUPER + l` | Lock screen (`hyprlock`) |
 | `SUPER + Shift + e` | Exit MangoWM |
 

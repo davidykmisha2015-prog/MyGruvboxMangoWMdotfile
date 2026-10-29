@@ -163,11 +163,47 @@ check_dep "Awww/Swww (wallpapers)" "awww" "swww"
 check_dep "Satty (screenshots)" "satty"
 check_dep "Grim (screenshots)" "grim"
 check_dep "Slurp (region selection)" "slurp"
+check_dep "wl-clipboard (copy to clipboard)" "wl-copy"
+
+# Specific assistance for screenshot tools (Win + Shift + S)
+SCREENSHOT_MISSING=()
+for tool in grim slurp satty wl-copy; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        SCREENSHOT_MISSING+=("$tool")
+    fi
+done
+
+if [ ${#SCREENSHOT_MISSING[@]} -gt 0 ]; then
+    echo ""
+    echo -e "${COLOR_ORANGE}📸 Screenshot tools missing for (Win + Shift + S): ${SCREENSHOT_MISSING[*]}${COLOR_RESET}"
+    
+    # Offer automatic installation on Arch Linux
+    if command -v pacman >/dev/null 2>&1; then
+        echo -e "${COLOR_YELLOW}👉 Arch Linux detected! Would you like to install them now?${COLOR_RESET}"
+        read -r -p "Install screenshot utilities? (y/N): " INSTALL_SHOT
+        if [[ "$INSTALL_SHOT" =~ ^[Yy]$ ]]; then
+            if command -v yay >/dev/null 2>&1; then
+                yay -S --needed grim slurp wl-clipboard satty
+            elif command -v paru >/dev/null 2>&1; then
+                paru -S --needed grim slurp wl-clipboard satty
+            else
+                sudo pacman -S --needed grim slurp wl-clipboard
+                if [[ " ${SCREENSHOT_MISSING[*]} " =~ " satty " ]]; then
+                    echo -e "${COLOR_YELLOW}⚠️  Note: 'satty' is in AUR. Please install it via your AUR helper: yay -S satty${COLOR_RESET}"
+                fi
+            fi
+        fi
+    else
+        echo -e "   ${COLOR_GRAY}Arch Linux:${COLOR_RESET} sudo pacman -S grim slurp wl-clipboard && yay -S satty"
+        echo -e "   ${COLOR_GRAY}NixOS:${COLOR_RESET}      Add satty, grim, slurp, wl-clipboard to configuration.nix"
+        echo -e "   ${COLOR_GRAY}Fedora:${COLOR_RESET}     sudo dnf install grim slurp wl-clipboard satty"
+    fi
+fi
 
 if [ ${#MISSING[@]} -gt 0 ]; then
     echo ""
-    echo -e "${COLOR_YELLOW}⚠️  Some tools are missing (${MISSING[*]}).${COLOR_RESET}"
-    echo "   Install them using your package manager (e.g., pacman, nix, dnf, apt)."
+    echo -e "${COLOR_YELLOW}⚠️  Some desktop components are missing (${MISSING[*]}).${COLOR_RESET}"
+    echo "   Install them using your package manager (e.g., pacman, yay, nix, dnf, apt)."
 fi
 
 echo ""
