@@ -80,7 +80,7 @@ The default modifier key is `SUPER` (`Win` key):
 Run this single command in your terminal to download and install the rice interactively:
 
 ```bash
-bash <(curl -sSL https://raw.githubusercontent.com/davidykmisha2015-prog/mangowm-dotfiles/main/install.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/davidykmisha2015-prog/MyGruvboxMangoWMdotfile/main/install.sh)
 ```
 
 The script automatically:
@@ -96,7 +96,7 @@ If you prefer inspecting the code first:
 
 ```bash
 # 1. Clone this repository
-git clone https://github.com/davidykmisha2015-prog/mangowm-dotfiles.git ~/mangowm-dotfiles
+git clone https://github.com/davidykmisha2015-prog/MyGruvboxMangoWMdotfile.git ~/mangowm-dotfiles
 cd ~/mangowm-dotfiles
 
 # 2. Run the interactive installer

@@ -37,7 +37,7 @@ elif [ -d "$SCRIPT_DIR/.config/mango" ]; then
 else
     echo -e "${COLOR_AQUA}⬇️  Remote installation detected! Cloning repository...${COLOR_RESET}"
     TEMP_DIR=$(mktemp -d)
-    git clone --depth 1 https://github.com/davidykmisha2015-prog/mangowm-dotfiles.git "$TEMP_DIR"
+    git clone --depth 1 https://github.com/davidykmisha2015-prog/MyGruvboxMangoWMdotfile.git "$TEMP_DIR"
     if [ -d "$TEMP_DIR/config" ]; then
         SOURCE_CONFIG="$TEMP_DIR/config"
     else
